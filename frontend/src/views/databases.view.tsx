@@ -3,18 +3,22 @@ import { VIEWS, ViewState } from "../App";
 import { GetDatabases, TestConnection } from "../../wailsjs/go/main/App";
 import { main } from "../../wailsjs/go/models";
 
-export const DatabasesView = ({ view, setView }: ViewState) => {
-  const [databases, setDatabases] = useState<main.DatabaseConnection[]>([]);
+export const DatabasesView = ({
+  view,
+  setView,
+  setSelectedDbName,
+  databases,
+}: ViewState & {
+  databases: main.DatabaseConnection[];
+  setSelectedDbName: React.Dispatch<React.SetStateAction<string>>;
+}) => {
   const [status, setStatus] = useState<string>("");
-
-  useEffect(() => {
-    GetDatabases().then((dbs) => setDatabases(dbs));
-  }, []);
 
   async function connectToDb(dbName: string) {
     try {
       console.log("Attempting to connect to ", dbName);
       await TestConnection(dbName);
+      setSelectedDbName(dbName);
       setView(VIEWS.QUERY_VIEW);
     } catch (error) {
       console.log({ error });

@@ -10,6 +10,10 @@ export function GetDatabases() {
   return window['go']['main']['App']['GetDatabases']();
 }
 
+export function GetDatabasesList(arg1) {
+  return window['go']['main']['App']['GetDatabasesList'](arg1);
+}
+
 export function TestConnection(arg1) {
   return window['go']['main']['App']['TestConnection'](arg1);
 }

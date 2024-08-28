@@ -1,9 +1,10 @@
-import { useState } from "react";
-import logo from "./assets/images/logo-universal.png";
+import { useEffect, useState } from "react";
 import "./App.css";
 import { AddDatabaseView } from "./views/add-database.view";
 import { DatabasesView } from "./views/databases.view";
 import { QueryView } from "./views/query.view";
+import { GetDatabases } from "../wailsjs/go/main/App";
+import { main } from "../wailsjs/go/models";
 
 export enum VIEWS {
   ADD_DATABASE = "addDatabase",
@@ -21,8 +22,15 @@ function App() {
     "Please enter your name below 👇"
   );
   const [name, setName] = useState("");
-  const updateName = (e: any) => setName(e.target.value);
-  const updateResultText = (result: string) => setResultText(result);
+  const [selectedDbName, setSelectedDbName] = useState("");
+  const [databases, setDatabases] = useState<main.DatabaseConnection[]>([]);
+
+  useEffect(() => {
+    GetDatabases().then((dbs) => {
+      setDatabases(dbs);
+      if (dbs.length > 0) setCurrentView(VIEWS.VIEW_DATABASES);
+    });
+  }, []);
 
   const [currentView, setCurrentView] = useState<VIEWS>(VIEWS.ADD_DATABASE);
 
@@ -31,9 +39,16 @@ function App() {
       case "addDatabase":
         return <AddDatabaseView view={currentView} setView={setCurrentView} />;
       case "viewDatabases":
-        return <DatabasesView view={currentView} setView={setCurrentView} />;
+        return (
+          <DatabasesView
+            setSelectedDbName={setSelectedDbName}
+            view={currentView}
+            setView={setCurrentView}
+            databases={databases}
+          />
+        );
       case "queryView":
-        return <QueryView view={currentView} setView={setCurrentView} />;
+        return <QueryView selectedDbName={selectedDbName} />;
       default:
         return <AddDatabaseView view={currentView} setView={setCurrentView} />;
     }
@@ -45,10 +60,6 @@ function App() {
 
   return (
     <div id="App" className="my-3">
-      {/* <img src={logo} id="logo" alt="logo" />
-      <div id="result" className="result">
-        {resultText}
-      </div> */}
       <nav className="flex gap-3 justify-center">
         <button
           onClick={() => handleUpdateView(VIEWS.VIEW_DATABASES)}

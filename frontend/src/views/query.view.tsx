@@ -1,44 +1,57 @@
 import { useEffect, useState } from "react";
 import { ViewState } from "../App";
-import { GetDatabases, TestConnection } from "../../wailsjs/go/main/App";
-import Editor from "@monaco-editor/react";
+import { GetDatabasesList } from "../../wailsjs/go/main/App";
+import { DatabaseDropdown } from "../components/dropdown";
+import { SqlEditor } from "../components/sql-editor";
 
-export const QueryView = ({ view, setView }: ViewState) => {
+export type ColumnInfo = {
+  column_name: string;
+  data_type: string;
+};
+
+export type TableInfo = {
+  table_name: string;
+  columns: ColumnInfo[];
+};
+
+export const QueryView = ({ selectedDbName }: { selectedDbName: string }) => {
   const [status, setStatus] = useState<string>("");
   const [val, setVal] = useState<string>("");
+  const [dbList, setDbList] = useState<{
+    [key: string]: Array<TableInfo>;
+  }>({});
 
-  async function connectToDb(dbName: string) {
-    try {
-      console.log("Attempting to connect to ", dbName);
-      await TestConnection(dbName);
-    } catch (error) {
-      setStatus(error as string);
-    }
-  }
+  useEffect(() => {
+    GetDatabasesList(selectedDbName).then((response) => {
+      setDbList(response);
+    });
+  }, [selectedDbName]);
+
   async function onChange(something: any) {
     console.log(something);
   }
 
+  console.log({ dbList });
+
   return (
-    <div className="my-4 flex flex-col gap-3 mx-auto  justify-center">
+    <div className="my-4 flex flex-col gap-2 ">
       <span>{status}</span>
-      <div className="max-w-md mx-auto min-w-[30rem]">
-        <div className="bg-white text-black font-medium font-sans text-left py-3 px-4 rounded-t-md border border-b-slate-400">
-          SQL Editor
+      <div className="flex  justify-end gap-2 mx-4">
+        <SqlEditor onChange={onChange} val={val} />
+        <div className="w-80 font-medium font-sans border rounded-t-lg  ">
+          <div className="border-b font-medium rounded-t-md font-sans text-left py-3 px-4 pb-4 border-b-slate-200">
+            Databases
+          </div>
+          <div className="text-left px-3  overflow-scroll  max-h-[30rem]">
+            {Object.keys(dbList).map((dbName) => (
+              <DatabaseDropdown
+                key={dbName}
+                dbName={dbName}
+                tables={dbList[dbName]}
+              />
+            ))}
+          </div>
         </div>
-        <Editor
-          height="400px"
-          defaultLanguage="sql"
-          defaultValue={val}
-          onChange={onChange}
-          theme="vs-light" // Or other themes like "light", "hc-black", etc.
-          options={{
-            fontSize: 14,
-            minimap: { enabled: false },
-            lineNumbers: "on",
-            scrollBeyondLastLine: true,
-          }}
-        />
       </div>
     </div>
   );
