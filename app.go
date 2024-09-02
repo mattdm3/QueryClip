@@ -19,6 +19,8 @@ var (
 	ErrFailedToQueryDatabase        = errors.New("failed to query database")
 	ErrFailedToScanDatabase         = errors.New("failed to scan database")
 	ErrFailedToGetTables            = errors.New("failed to fetch tables for database")
+	ErrFailedToGetColumns           = errors.New("failed to fetch columns for database")
+	ErrFailedToScanRow              = errors.New("failed to fetch rows for database")
 )
 
 // App struct

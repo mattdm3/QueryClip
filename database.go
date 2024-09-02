@@ -15,7 +15,6 @@ func (a *App) AddDatabase(databaseName string, connectionString string) error {
 	// Attempt to open a database connection
 	db, err := sql.Open("postgres", connectionString) // Use the appropriate driver name here
 	if err != nil {
-		log.Printf("Failed to open database connection for %s: %v", databaseName, err)
 		return ErrFailedToConnect
 	}
 
@@ -94,7 +93,7 @@ func (a *App) GetDatabasesList(dbName string) (map[string][]TableInfo, error) {
 	return databases, nil
 }
 
-func (a *App) getTablesForDatabase(dbName string) ([]TableInfo, error) {
+func (a *App) getDbConnection(dbName string) (*sql.DB, error) {
 	connectionString, exists := a.connections[dbName]
 	fmt.Printf("connectionString string: %s, dbName: %s", connectionString, dbName)
 	if !exists {
@@ -103,6 +102,14 @@ func (a *App) getTablesForDatabase(dbName string) ([]TableInfo, error) {
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return nil, ErrFailedToConnect
+	}
+	return db, nil
+}
+
+func (a *App) getTablesForDatabase(dbName string) ([]TableInfo, error) {
+	db, err := a.getDbConnection(dbName)
+	if err != nil {
+		return nil, err
 	}
 	defer db.Close()
 
@@ -151,4 +158,55 @@ func (a *App) getColumnsForTable(db *sql.DB, tableName string) ([]ColumnInfo, er
 		columns = append(columns, column)
 	}
 	return columns, nil
+}
+
+func (a *App) SubmitQuery(dbName string, query string) ([]map[string]interface{}, error) {
+	db, err := a.getDbConnection(dbName)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, ErrFailedToQueryDatabase
+	}
+	defer rows.Close()
+
+	return a.rowsToMap(rows)
+}
+
+func (a *App) rowsToMap(rows *sql.Rows) ([]map[string]interface{}, error) {
+	//get column names
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, ErrFailedToGetColumns
+	}
+
+	// prep a slice for the results;
+	results := []map[string]interface{}{}
+
+	//interate over rows;
+
+	for rows.Next() {
+		values := make([]interface{}, len(columns))
+		valuePtrs := make([]interface{}, len(columns))
+
+		for i := range columns {
+			valuePtrs[i] = &values[i]
+		}
+
+		//scan result into the values pointers
+		if err := rows.Scan(valuePtrs...); err != nil {
+			return nil, ErrFailedToScanRow
+		}
+
+		//create a map to hold row data
+		row := make(map[string]interface{})
+		for i, col := range columns {
+			row[col] = values[i]
+		}
+
+		// append row to the results slice
+		results = append(results, row)
+	}
+	return results, nil
 }

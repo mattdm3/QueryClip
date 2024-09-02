@@ -15,7 +15,7 @@ export const TableDropdown = ({ table }: { table: TableInfo }) => {
     <div className="relative">
       <button
         onClick={toggleDropdown}
-        className="flex items-center w-full py-1 text-md font-normal text-gray-700 bg-transparent hover:text-gray-900 focus:outline-none"
+        className="flex font-sans text-sm items-center w-full py-0 text-md text-gray-700 bg-transparent hover:text-gray-900 focus:outline-none"
       >
         <RxCaretDown
           className={`mr-2 transform ${isOpen ? "rotate-180" : "rotate-0"}`}

@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
 import "./App.css";
+import { useCallback, useEffect, useState } from "react";
 import { AddDatabaseView } from "./views/add-database.view";
 import { DatabasesView } from "./views/databases.view";
 import { QueryView } from "./views/query.view";
 import { GetDatabases } from "../wailsjs/go/main/App";
 import { main } from "../wailsjs/go/models";
+import { GoHome } from "react-icons/go";
+import { BsDatabaseAdd } from "react-icons/bs";
 
 export enum VIEWS {
   ADD_DATABASE = "addDatabase",
@@ -18,27 +20,21 @@ export type ViewState = {
 };
 
 function App() {
-  const [resultText, setResultText] = useState(
-    "Please enter your name below 👇"
-  );
-  const [name, setName] = useState("");
+  const [currentView, setCurrentView] = useState<VIEWS>(VIEWS.VIEW_DATABASES);
   const [selectedDbName, setSelectedDbName] = useState("");
   const [databases, setDatabases] = useState<main.DatabaseConnection[]>([]);
 
   useEffect(() => {
     GetDatabases().then((dbs) => {
       setDatabases(dbs);
-      if (dbs.length > 0) setCurrentView(VIEWS.VIEW_DATABASES);
     });
   }, []);
 
-  const [currentView, setCurrentView] = useState<VIEWS>(VIEWS.ADD_DATABASE);
-
   const renderView = () => {
     switch (currentView) {
-      case "addDatabase":
+      case VIEWS.ADD_DATABASE:
         return <AddDatabaseView view={currentView} setView={setCurrentView} />;
-      case "viewDatabases":
+      case VIEWS.VIEW_DATABASES:
         return (
           <DatabasesView
             setSelectedDbName={setSelectedDbName}
@@ -47,7 +43,7 @@ function App() {
             databases={databases}
           />
         );
-      case "queryView":
+      case VIEWS.QUERY_VIEW:
         return <QueryView selectedDbName={selectedDbName} />;
       default:
         return <AddDatabaseView view={currentView} setView={setCurrentView} />;
@@ -59,38 +55,27 @@ function App() {
   }
 
   return (
-    <div id="App" className="my-3">
-      <nav className="flex gap-3 justify-center">
-        <button
-          onClick={() => handleUpdateView(VIEWS.VIEW_DATABASES)}
-          className={`hover:underline ${
-            currentView === VIEWS.VIEW_DATABASES ? "underline" : ""
-          }`}
-        >
-          Databases
-        </button>
-        <button
-          onClick={() => handleUpdateView(VIEWS.ADD_DATABASE)}
-          className={`hover:underline ${
-            currentView === VIEWS.ADD_DATABASE ? "underline" : ""
-          }`}
-        >
-          Add A Database
-        </button>
-      </nav>
-      <div id="input" className="input-box">
-        {/* <input
-          id="name"
-          className="input"
-          onChange={updateName}
-          autoComplete="off"
-          name="input"
-          type="text"
-        /> */}
+    <div id="App">
+      <div className="flex">
+        <aside className="flex gap-3 flex-col text-sm py-4 bg-stone-100 h-screen">
+          <button
+            onClick={() => handleUpdateView(VIEWS.VIEW_DATABASES)}
+            className={`px-3 hover:underline ${
+              currentView === VIEWS.VIEW_DATABASES ? "underline" : ""
+            }`}
+          >
+            <GoHome size={22} />
+          </button>
+          <button
+            onClick={() => handleUpdateView(VIEWS.ADD_DATABASE)}
+            className={`px-3 hover:underline ${
+              currentView === VIEWS.ADD_DATABASE ? "underline" : ""
+            }`}
+          >
+            <BsDatabaseAdd size={22} />
+          </button>
+        </aside>
         {renderView()}
-        {/* <button className="btn" onClick={greet}>
-          Add a Database
-        </button> */}
       </div>
     </div>
   );
