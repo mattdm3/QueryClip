@@ -26,7 +26,7 @@ export const SqlEditor = ({
     });
   };
   return (
-    <div className="max-w-md min-w-full border rounded-lg py-1">
+    <div className="max-w-md min-w-full  border rounded-lg py-1">
       <div className="border-b font-medium font-sans text-left py-3 px-4   border-b-slate-200">
         <div className="flex justify-between">
           <span>SQL Editor</span>
@@ -49,7 +49,7 @@ export const SqlEditor = ({
 
       <div className="pr-10 pt-3">
         <Editor
-          height="400px"
+          height="300px"
           defaultLanguage="sql"
           defaultValue={val}
           onChange={onChange}

@@ -15,6 +15,9 @@ export type TableInfo = {
   columns: ColumnInfo[];
 };
 
+const LIMIT = 2000;
+const OFFSET = 0; // this will need to be mutable
+
 const QueryResults = ({
   queryResults,
 }: {
@@ -28,13 +31,20 @@ const QueryResults = ({
         </div>
       </div>
       <div className="overflow-scroll max-h-[20rem]">
-        <QueryResultsTable data={queryResults} />
+        {queryResults.length === 0 ? (
+          <div className="min-h-[20rem] flex flex-col items-center justify-center">
+            Nothing here.
+          </div>
+        ) : (
+          <QueryResultsTable data={queryResults} />
+        )}
       </div>
     </div>
   );
 };
 
 export const QueryView = ({ selectedDbName }: { selectedDbName: string }) => {
+  const [offset, setOffset] = useState(OFFSET);
   const [status, setStatus] = useState<string>("");
   const [val, setVal] = useState<string>("");
   const [dbList, setDbList] = useState<{
@@ -57,7 +67,7 @@ export const QueryView = ({ selectedDbName }: { selectedDbName: string }) => {
   async function onSubmit(sqlQuery: string) {
     if (!!sqlQuery) {
       try {
-        SubmitQuery(selectedDbName, sqlQuery).then((response) =>
+        SubmitQuery(selectedDbName, sqlQuery, LIMIT, OFFSET).then((response) =>
           setQueryResults(response)
         );
       } catch (error) {
@@ -67,18 +77,18 @@ export const QueryView = ({ selectedDbName }: { selectedDbName: string }) => {
   }
 
   return (
-    <div className="my-4 flex flex-col gap-2  w-full px-3">
+    <div className="mb-4 border-t flex flex-col gap-2  w-full px-3">
       <span>{status}</span>
       <div className="flex w-full justify-end gap-2">
-        <div className="flex flex-col gap-3 min-w-[45rem]">
+        <div className="flex flex-col gap-3 min-w-[45rem] w-full">
           <SqlEditor onSubmit={onSubmit} onChange={onChange} val={val} />
           <QueryResults queryResults={queryResults} />
         </div>
-        <div className="w-80 font-medium font-sans border rounded-t-lg  ">
+        <div className="w-80 font-medium font-sans border rounded-t-lg rounded-b-lg  ">
           <div className="border-b font-medium rounded-t-md font-sans text-left py-3 px-4 pb-4 border-b-slate-200">
             Databases
           </div>
-          <div className="text-left px-3  overflow-scroll  max-h-[30rem]">
+          <div className="text-left px-3  overflow-scroll  max-h-[44rem]">
             {Object.keys(dbList).map((dbName) => (
               <DatabaseDropdown
                 key={dbName}

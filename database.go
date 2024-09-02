@@ -4,6 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
+)
+
+const (
+	DEFAULT_QUERY_LIMIT int = 2000
 )
 
 func (a *App) AddDatabase(databaseName string, connectionString string) error {
@@ -160,10 +165,24 @@ func (a *App) getColumnsForTable(db *sql.DB, tableName string) ([]ColumnInfo, er
 	return columns, nil
 }
 
-func (a *App) SubmitQuery(dbName string, query string) ([]map[string]interface{}, error) {
+func (a *App) SubmitQuery(dbName string, query string, limit int, offset int) ([]map[string]interface{}, error) {
+	// Set default values if limit or offset are not provided
+	if limit == 0 {
+		limit = DEFAULT_QUERY_LIMIT // Default limit
+	}
+	if offset < 0 {
+		offset = 0 // Default offset
+	}
+
+	//check db connection
 	db, err := a.getDbConnection(dbName)
 	if err != nil {
 		return nil, err
+	}
+
+	//parse given query to check for limit
+	if !hasLimitClause(query) {
+		query = fmt.Sprintf("%s LIMIT %d OFFSET %d", query, limit, offset)
 	}
 	rows, err := db.Query(query)
 	if err != nil {
@@ -172,6 +191,12 @@ func (a *App) SubmitQuery(dbName string, query string) ([]map[string]interface{}
 	defer rows.Close()
 
 	return a.rowsToMap(rows)
+}
+
+func hasLimitClause(query string) bool {
+	// Convert the query to lowercase to make the check case-insensitive
+	loweredQuery := strings.ToLower(query)
+	return strings.Contains(loweredQuery, "limit")
 }
 
 func (a *App) rowsToMap(rows *sql.Rows) ([]map[string]interface{}, error) {

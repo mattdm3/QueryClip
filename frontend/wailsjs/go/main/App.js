@@ -14,8 +14,8 @@ export function GetDatabasesList(arg1) {
   return window['go']['main']['App']['GetDatabasesList'](arg1);
 }
 
-export function SubmitQuery(arg1, arg2) {
-  return window['go']['main']['App']['SubmitQuery'](arg1, arg2);
+export function SubmitQuery(arg1, arg2, arg3, arg4) {
+  return window['go']['main']['App']['SubmitQuery'](arg1, arg2, arg3, arg4);
 }
 
 export function TestConnection(arg1) {
