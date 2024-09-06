@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { AddDatabaseForm } from "../components/add-database-form";
-import { VIEWS, ViewState } from "../App";
+import { ViewState } from "../App";
 // import AddDatabaseForm from '../components/AddDatabaseForm';
 
-export const AddDatabaseView = ({ view, setView }: ViewState) => {
+export const AddDatabaseView = () => {
   const [dbConnections, setDbConnections] = useState([]);
 
   //   const handleAddDatabase = (newConnection) => {
@@ -16,7 +16,6 @@ export const AddDatabaseView = ({ view, setView }: ViewState) => {
       <div className="my-4 flex flex-col justify-center">
         <h1 className="text-2xl my-6">Add A Database</h1>
         <AddDatabaseForm />
-        {/* <AddDatabaseForm onAddDatabase={handleAddDatabase} /> */}
       </div>
     </div>
   );

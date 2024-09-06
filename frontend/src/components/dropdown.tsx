@@ -9,8 +9,6 @@ export const TableDropdown = ({ table }: { table: TableInfo }) => {
     setIsOpen(!isOpen);
   };
 
-  console.log({ table: table.columns });
-
   return (
     <div className="relative">
       <button
@@ -52,7 +50,6 @@ export const DatabaseDropdown = ({
   tables: TableInfo[];
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  console.log({ tables });
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };

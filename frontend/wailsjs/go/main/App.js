@@ -14,6 +14,10 @@ export function GetDatabasesList(arg1) {
   return window['go']['main']['App']['GetDatabasesList'](arg1);
 }
 
+export function SubmitAIQuery(arg1, arg2, arg3, arg4, arg5, arg6) {
+  return window['go']['main']['App']['SubmitAIQuery'](arg1, arg2, arg3, arg4, arg5, arg6);
+}
+
 export function SubmitQuery(arg1, arg2, arg3, arg4) {
   return window['go']['main']['App']['SubmitQuery'](arg1, arg2, arg3, arg4);
 }

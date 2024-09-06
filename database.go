@@ -193,6 +193,53 @@ func (a *App) SubmitQuery(dbName string, query string, limit int, offset int) ([
 	return a.rowsToMap(rows)
 }
 
+func (a *App) SubmitAIQuery(dbName string, humanLanguageQuery string, instructions string, aiModel string, limit int, offset int) ([]map[string]interface{}, error) {
+	// Set default values if limit or offset are not provided
+	if limit == 0 {
+		limit = DEFAULT_QUERY_LIMIT // Default limit
+	}
+	if offset < 0 {
+		offset = 0 // Default offset
+	}
+
+	//check db connection
+	db, err := a.getDbConnection(dbName)
+	if err != nil {
+		return nil, err
+	}
+
+	//transform human language to SQL;
+	var query string
+	if aiModel == "llama3" {
+		queryResponse, err := callLlamaClient(humanLanguageQuery, instructions, aiModel)
+		if err != nil {
+			return nil, err
+		}
+		query = queryResponse
+		log.Printf("query response %s", queryResponse)
+	} else {
+		queryResponse, err := callOpenAI(humanLanguageQuery, instructions, aiModel)
+		if err != nil {
+			return nil, err
+		}
+		query = queryResponse
+		log.Printf("query response %s", queryResponse)
+	}
+
+	//parse given query to check for limit
+	if !hasLimitClause(query) {
+		query = fmt.Sprintf("%s LIMIT %d OFFSET %d", query, limit, offset)
+	}
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, ErrFailedToQueryDatabase
+	}
+	defer rows.Close()
+
+	return a.rowsToMap(rows)
+}
+
 func hasLimitClause(query string) bool {
 	// Convert the query to lowercase to make the check case-insensitive
 	loweredQuery := strings.ToLower(query)

@@ -5,7 +5,7 @@ interface QueryResultsTableProps {
   data: Array<{ [key: string]: any }>;
 }
 
-export const QueryResultsTable = ({ data }: QueryResultsTableProps) => {
+const QueryResultsTable = ({ data }: QueryResultsTableProps) => {
   // Use useMemo to memoize the columns and data to prevent unnecessary re-renders
   const columns = useMemo(() => {
     if (data.length === 0) return [];
@@ -40,7 +40,7 @@ export const QueryResultsTable = ({ data }: QueryResultsTableProps) => {
         {rows.map((row) => {
           prepareRow(row);
           return (
-            <tr {...row.getRowProps()}>
+            <tr {...row.getRowProps()} key={row.id}>
               {row.cells.map((cell) => (
                 <td
                   {...cell.getCellProps()}
@@ -60,5 +60,30 @@ export const QueryResultsTable = ({ data }: QueryResultsTableProps) => {
         })}
       </tbody>
     </table>
+  );
+};
+
+export const QueryResults = ({
+  queryResults,
+}: {
+  queryResults: Array<{ [key: string]: any }>;
+}) => {
+  return (
+    <div className="max-w-md  border rounded-lg min-w-full py-1">
+      <div className="border-b font-medium font-sans text-left py-3 px-4  border-b-slate-200">
+        <div className="flex justify-between">
+          <span>Results</span>
+        </div>
+      </div>
+      <div className="overflow-scroll max-h-[20rem]">
+        {queryResults.length === 0 ? (
+          <div className="min-h-[20rem] flex flex-col items-center justify-center">
+            Nothing here.
+          </div>
+        ) : (
+          <QueryResultsTable data={queryResults} />
+        )}
+      </div>
+    </div>
   );
 };

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { VIEWS, ViewState } from "../App";
+import { ViewState } from "../App";
 import { GetDatabases, TestConnection } from "../../wailsjs/go/main/App";
 import { main } from "../../wailsjs/go/models";
+import { VIEWS } from "../constants";
 
 export const DatabasesView = ({
   view,
@@ -10,7 +11,7 @@ export const DatabasesView = ({
   databases,
 }: ViewState & {
   databases: main.DatabaseConnection[];
-  setSelectedDbName: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedDbName: (s: string) => void;
 }) => {
   const [status, setStatus] = useState<string>("");
 
@@ -20,6 +21,7 @@ export const DatabasesView = ({
       await TestConnection(dbName);
       setSelectedDbName(dbName);
       setView(VIEWS.QUERY_VIEW);
+      console.log("Conntection to ", dbName, " established!");
     } catch (error) {
       console.log({ error });
       setStatus(error as string);

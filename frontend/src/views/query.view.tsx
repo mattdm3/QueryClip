@@ -1,9 +1,15 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ViewState } from "../App";
-import { GetDatabasesList, SubmitQuery } from "../../wailsjs/go/main/App";
+import {
+  GetDatabasesList,
+  SubmitAIQuery,
+  SubmitQuery,
+} from "../../wailsjs/go/main/App";
 import { DatabaseDropdown } from "../components/dropdown";
 import { SqlEditor } from "../components/sql-editor";
-import { QueryResultsTable } from "../components/query-results-table";
+import { QueryResults } from "../components/query-results-table";
+import { LLM, LLM_QUERY_INSTRUCTIONS, SQL_MODES } from "../constants";
+import { useAppContext } from "../context";
 
 export type ColumnInfo = {
   column_name: string;
@@ -18,32 +24,10 @@ export type TableInfo = {
 const LIMIT = 2000;
 const OFFSET = 0; // this will need to be mutable
 
-const QueryResults = ({
-  queryResults,
-}: {
-  queryResults: Array<{ [key: string]: any }>;
-}) => {
-  return (
-    <div className="max-w-md  border rounded-lg min-w-full py-1">
-      <div className="border-b font-medium font-sans text-left py-3 px-4  border-b-slate-200">
-        <div className="flex justify-between">
-          <span>Results</span>
-        </div>
-      </div>
-      <div className="overflow-scroll max-h-[20rem]">
-        {queryResults.length === 0 ? (
-          <div className="min-h-[20rem] flex flex-col items-center justify-center">
-            Nothing here.
-          </div>
-        ) : (
-          <QueryResultsTable data={queryResults} />
-        )}
-      </div>
-    </div>
-  );
-};
-
 export const QueryView = ({ selectedDbName }: { selectedDbName: string }) => {
+  const { sqlMode, toggleSqlMode } = useAppContext();
+  const isAIMode = sqlMode === SQL_MODES.AI;
+
   const [offset, setOffset] = useState(OFFSET);
   const [status, setStatus] = useState<string>("");
   const [val, setVal] = useState<string>("");
@@ -64,24 +48,41 @@ export const QueryView = ({ selectedDbName }: { selectedDbName: string }) => {
     // console.log(something);
   }
 
-  async function onSubmit(sqlQuery: string) {
+  const onSubmit = (sqlQuery: string) => {
     if (!!sqlQuery) {
       try {
-        SubmitQuery(selectedDbName, sqlQuery, LIMIT, OFFSET).then((response) =>
-          setQueryResults(response)
-        );
+        if (isAIMode) {
+          SubmitAIQuery(
+            selectedDbName,
+            sqlQuery,
+            LLM_QUERY_INSTRUCTIONS,
+            LLM.GPT40MINI,
+            LIMIT,
+            OFFSET
+          ).then((response) => setQueryResults(response));
+        } else {
+          SubmitQuery(selectedDbName, sqlQuery, LIMIT, OFFSET).then(
+            (response) => setQueryResults(response)
+          );
+        }
       } catch (error) {
-        console.error({ error });
+        console.error("Client Error On submit", { error });
       }
     }
-  }
+  };
 
   return (
     <div className="mb-4 border-t flex flex-col gap-2  w-full px-3">
       <span>{status}</span>
       <div className="flex w-full justify-end gap-2">
         <div className="flex flex-col gap-3 min-w-[45rem] w-full">
-          <SqlEditor onSubmit={onSubmit} onChange={onChange} val={val} />
+          <SqlEditor
+            isAIMode={isAIMode}
+            toggleSqlMode={toggleSqlMode}
+            onSubmit={onSubmit}
+            onChange={onChange}
+            val={val}
+          />
           <QueryResults queryResults={queryResults} />
         </div>
         <div className="w-80 font-medium font-sans border rounded-t-lg rounded-b-lg  ">

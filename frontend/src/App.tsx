@@ -7,33 +7,34 @@ import { GetDatabases } from "../wailsjs/go/main/App";
 import { main } from "../wailsjs/go/models";
 import { GoHome } from "react-icons/go";
 import { BsDatabaseAdd } from "react-icons/bs";
-
-export enum VIEWS {
-  ADD_DATABASE = "addDatabase",
-  VIEW_DATABASES = "viewDatabases",
-  QUERY_VIEW = "queryView",
-}
+import { AppContextProvider, useAppContext } from "./context";
+import { VIEWS } from "./constants";
 
 export type ViewState = {
   view: VIEWS;
-  setView: React.Dispatch<React.SetStateAction<VIEWS>>;
+  setView: (v: VIEWS) => void;
 };
 
 function App() {
-  const [currentView, setCurrentView] = useState<VIEWS>(VIEWS.VIEW_DATABASES);
-  const [selectedDbName, setSelectedDbName] = useState("");
-  const [databases, setDatabases] = useState<main.DatabaseConnection[]>([]);
+  const appContext = useAppContext();
 
-  useEffect(() => {
-    GetDatabases().then((dbs) => {
-      setDatabases(dbs);
-    });
-  }, []);
+  const {
+    currentView,
+    setCurrentView,
+    selectedDbName,
+    setSelectedDbName,
+    databases,
+    setDatabases,
+  } = appContext;
 
   const renderView = () => {
     switch (currentView) {
       case VIEWS.ADD_DATABASE:
-        return <AddDatabaseView view={currentView} setView={setCurrentView} />;
+        return (
+          <AddDatabaseView
+          // view={currentView} setView={setCurrentView}
+          />
+        );
       case VIEWS.VIEW_DATABASES:
         return (
           <DatabasesView
@@ -46,7 +47,11 @@ function App() {
       case VIEWS.QUERY_VIEW:
         return <QueryView selectedDbName={selectedDbName} />;
       default:
-        return <AddDatabaseView view={currentView} setView={setCurrentView} />;
+        return (
+          <AddDatabaseView
+          // view={currentView} setView={setCurrentView}
+          />
+        );
     }
   };
 
